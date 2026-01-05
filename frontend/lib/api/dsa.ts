@@ -50,5 +50,28 @@ export const dsaApi = {
     });
     return response.data;
   },
+
+  searchByQuery: async (query: string, limit: number = 100): Promise<DSAProblem[]> => {
+    const response = await apiClient.post<DSAProblem[]>('/dsa/search/query', {
+      query,
+      limit,
+    });
+    return response.data;
+  },
+
+  searchProblems: async (query: string, limit: number = 50): Promise<DSAProblem[]> => {
+    const response = await apiClient.post<DSAProblem[]>('/dsa/search/problems', {
+      query,
+      limit,
+    });
+    return response.data;
+  },
+
+  getProblems: async (limit: number = 100, skip: number = 0): Promise<DSAProblem[]> => {
+    const response = await apiClient.get<DSAProblem[]>('/dsa/problems', {
+      params: { limit, skip },
+    });
+    return response.data;
+  },
 };
 

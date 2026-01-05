@@ -6,7 +6,7 @@ import Navbar from '@/components/Navbar';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { useAuth } from '@/hooks/useAuth';
 import { dsaApi } from '@/lib/api/dsa';
-import { DSAList } from '@/types';
+import { DSAList, DSAProblem } from '@/types';
 import Link from 'next/link';
 
 export default function DSAPage() {
@@ -19,6 +19,10 @@ export default function DSAPage() {
   const [newListName, setNewListName] = useState('');
   const [isPublic, setIsPublic] = useState(false);
   const [activeTab, setActiveTab] = useState<'my' | 'public'>('my');
+  const [newlyCreatedListId, setNewlyCreatedListId] = useState<string | null>(null);
+  const [problems, setProblems] = useState<DSAProblem[]>([]);
+  const [loadingProblems, setLoadingProblems] = useState(false);
+  const [addingProblems, setAddingProblems] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     if (!isAuthenticated()) {
@@ -54,10 +58,57 @@ export default function DSAPage() {
       setNewListName('');
       setIsPublic(false);
       setShowCreateForm(false);
+      
+      // Show problem cards after creating list
+      setNewlyCreatedListId(newList._id);
+      await loadProblems();
     } catch (error) {
       console.error('Failed to create list:', error);
       alert('Failed to create list');
     }
+  };
+
+  const loadProblems = async () => {
+    try {
+      setLoadingProblems(true);
+      const problemsData = await dsaApi.getProblems(100);
+      setProblems(problemsData);
+    } catch (error) {
+      console.error('Failed to load problems:', error);
+      alert('Failed to load problems');
+    } finally {
+      setLoadingProblems(false);
+    }
+  };
+
+  const handleAddProblem = async (problemId: string) => {
+    if (!newlyCreatedListId || addingProblems.has(problemId)) return;
+
+    try {
+      setAddingProblems(prev => new Set(prev).add(problemId));
+      await dsaApi.addProblem(newlyCreatedListId, problemId);
+      // Update the list in state
+      setLists(lists.map(list => 
+        list._id === newlyCreatedListId 
+          ? { ...list, problemIds: [...list.problemIds, problemId] }
+          : list
+      ));
+    } catch (error: any) {
+      console.error('Failed to add problem:', error);
+      const errorMessage = error.response?.data?.error?.message || 'Failed to add problem to list';
+      alert(errorMessage);
+    } finally {
+      setAddingProblems(prev => {
+        const next = new Set(prev);
+        next.delete(problemId);
+        return next;
+      });
+    }
+  };
+
+  const handleCloseProblemCards = () => {
+    setNewlyCreatedListId(null);
+    setProblems([]);
   };
 
   const handleDeleteList = async (id: string) => {
@@ -146,6 +197,76 @@ export default function DSAPage() {
                 </div>
               </div>
             </form>
+          )}
+
+          {newlyCreatedListId && (
+            <div className="mb-8 bg-white rounded-lg shadow-lg p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-2xl font-bold text-gray-900">Add Problems to Your List</h2>
+                <div className="flex gap-2">
+                  <Link
+                    href={`/dsa/lists/${newlyCreatedListId}`}
+                    className="px-4 py-2 bg-black text-white rounded-md hover:bg-blue-700 text-sm"
+                  >
+                    View List
+                  </Link>
+                  <button
+                    onClick={handleCloseProblemCards}
+                    className="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 text-sm"
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>
+              
+              {loadingProblems ? (
+                <div className="text-center py-12">Loading problems...</div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 max-h-96 overflow-y-auto">
+                  {problems.map((problem) => (
+                    <div
+                      key={problem._id}
+                      onClick={() => handleAddProblem(problem._id)}
+                      className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                        addingProblems.has(problem._id)
+                          ? 'border-gray-300 bg-gray-100 opacity-50 cursor-not-allowed'
+                          : 'border-gray-200 hover:border-black hover:shadow-md'
+                      }`}
+                    >
+                      <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">
+                        {problem.title}
+                      </h3>
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`px-2 py-1 text-xs font-semibold rounded ${
+                            problem.difficulty === 'Easy'
+                              ? 'bg-green-100 text-green-800'
+                              : problem.difficulty === 'Medium'
+                              ? 'bg-yellow-100 text-yellow-800'
+                              : 'bg-red-100 text-red-800'
+                          }`}
+                        >
+                          {problem.difficulty}
+                        </span>
+                        {problem.paidOnly && (
+                          <span className="px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded">
+                            Premium
+                          </span>
+                        )}
+                      </div>
+                      {addingProblems.has(problem._id) && (
+                        <p className="text-xs text-gray-500 mt-2">Adding...</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              )}
+              {problems.length === 0 && !loadingProblems && (
+                <div className="text-center py-12 text-gray-500">
+                  No problems available. Try searching for problems instead.
+                </div>
+              )}
+            </div>
           )}
 
           <div className="mb-4">

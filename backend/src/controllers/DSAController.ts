@@ -28,6 +28,21 @@ const companySearchSchema = z.object({
   role: z.string().optional().default('SDE'),
 });
 
+const querySearchSchema = z.object({
+  query: z.string().min(1),
+  limit: z.number().optional().default(100),
+});
+
+const searchProblemsSchema = z.object({
+  query: z.string().min(1),
+  limit: z.number().optional().default(50),
+});
+
+const getProblemsSchema = z.object({
+  limit: z.number().optional().default(100),
+  skip: z.number().optional().default(0),
+});
+
 export class DSAController {
   constructor(
     private dsaService: DSAService,
@@ -292,6 +307,115 @@ export class DSAController {
       const data = companySearchSchema.parse(body);
 
       const problems = await this.embeddingService.searchByCompany(data.companyName, data.role);
+
+      return c.json(problems.map(p => ({
+        _id: p._id?.toString(),
+        frontendQuestionId: p.frontendQuestionId,
+        title: p.title,
+        titleSlug: p.titleSlug,
+        difficulty: p.difficulty,
+        acRate: p.acRate,
+        topicTags: p.topicTags || [],
+        paidOnly: p.paidOnly || false,
+        hasSolution: p.hasSolution || false,
+        hasVideoSolution: p.hasVideoSolution || false,
+      })));
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const firstIssue = error.issues[0];
+        return c.json(
+          createErrorResponse(
+            new AppError(
+              400,
+              firstIssue?.message || 'Validation error',
+              'VALIDATION_ERROR'
+            )
+          ), 400 as ContentfulStatusCode
+        );
+      }
+      return c.json(createErrorResponse(error), 500 as ContentfulStatusCode);
+    }
+  }
+
+  async searchProblems(c: Context) {
+    try {
+      const body = await c.req.json();
+      const data = searchProblemsSchema.parse(body);
+
+      const problems = await this.dsaService.searchProblemsByTitle(data.query, data.limit);
+
+      return c.json(problems.map(p => ({
+        _id: p._id?.toString(),
+        frontendQuestionId: p.frontendQuestionId,
+        title: p.title,
+        titleSlug: p.titleSlug,
+        difficulty: p.difficulty,
+        acRate: p.acRate,
+        topicTags: p.topicTags || [],
+        paidOnly: p.paidOnly || false,
+        hasSolution: p.hasSolution || false,
+        hasVideoSolution: p.hasVideoSolution || false,
+      })));
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const firstIssue = error.issues[0];
+        return c.json(
+          createErrorResponse(
+            new AppError(
+              400,
+              firstIssue?.message || 'Validation error',
+              'VALIDATION_ERROR'
+            )
+          ), 400 as ContentfulStatusCode
+        );
+      }
+      return c.json(createErrorResponse(error), 500 as ContentfulStatusCode);
+    }
+  }
+
+  async getProblems(c: Context) {
+    try {
+      const limit = parseInt(c.req.query('limit') || '100');
+      const skip = parseInt(c.req.query('skip') || '0');
+
+      const data = getProblemsSchema.parse({ limit, skip });
+      const problems = await this.dsaService.getProblems(data.limit, data.skip);
+
+      return c.json(problems.map(p => ({
+        _id: p._id?.toString(),
+        frontendQuestionId: p.frontendQuestionId,
+        title: p.title,
+        titleSlug: p.titleSlug,
+        difficulty: p.difficulty,
+        acRate: p.acRate,
+        topicTags: p.topicTags || [],
+        paidOnly: p.paidOnly || false,
+        hasSolution: p.hasSolution || false,
+        hasVideoSolution: p.hasVideoSolution || false,
+      })));
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const firstIssue = error.issues[0];
+        return c.json(
+          createErrorResponse(
+            new AppError(
+              400,
+              firstIssue?.message || 'Validation error',
+              'VALIDATION_ERROR'
+            )
+          ), 400 as ContentfulStatusCode
+        );
+      }
+      return c.json(createErrorResponse(error), 500 as ContentfulStatusCode);
+    }
+  }
+
+  async searchByQuery(c: Context) {
+    try {
+      const body = await c.req.json();
+      const data = querySearchSchema.parse(body);
+
+      const problems = await this.embeddingService.searchByQuery(data.query, data.limit);
 
       return c.json(problems.map(p => ({
         _id: p._id?.toString(),

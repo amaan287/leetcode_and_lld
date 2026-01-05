@@ -63,8 +63,8 @@ export default function QuestionDetailPage() {
     return (
       <ProtectedRoute>
         <Navbar />
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-          <div>Loading...</div>
+        <div className="min-h-screen bg-[#1a1a1a] flex items-center justify-center">
+          <div className="text-white">Loading...</div>
         </div>
       </ProtectedRoute>
     );
@@ -74,108 +74,168 @@ export default function QuestionDetailPage() {
     return (
       <ProtectedRoute>
         <Navbar />
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-          <div>Question not found</div>
+        <div className="min-h-screen bg-[#1a1a1a] flex items-center justify-center">
+          <div className="text-white">Question not found</div>
         </div>
       </ProtectedRoute>
     );
   }
 
+  const getDifficultyColor = (difficulty: string) => {
+    switch (difficulty) {
+      case 'Easy':
+        return 'text-[#00b8a3]';
+      case 'Medium':
+        return 'text-[#ffc01e]';
+      case 'Hard':
+        return 'text-[#ff375f]';
+      default:
+        return 'text-gray-400';
+    }
+  };
+
   return (
     <ProtectedRoute>
       <Navbar />
-      <div className="min-h-screen bg-gray-50">
-        <div className="max-w-4xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-          <button
-            onClick={() => router.back()}
-            className="text-black hover:text-blue-700 mb-6"
-          >
-            ← Back to Questions
-          </button>
+      <div className="min-h-screen bg-[#1a1a1a] flex flex-col">
+        {/* Main Content Area - Split Layout */}
+        <div className="flex-1 flex flex-col lg:flex-row overflow-hidden">
+          {/* Left Panel - Question Description */}
+          <div className="flex-1 overflow-y-auto bg-[#282828] border-r border-[#3c3c3c]">
+            <div className="max-w-3xl mx-auto px-6 py-4">
+              {/* Header */}
+              <div className="mb-6">
+                <button
+                  onClick={() => router.back()}
+                  className="text-[#b3b3b3] hover:text-white mb-4 text-sm flex items-center gap-1 transition-colors"
+                >
+                  <span>←</span>
+                  <span>Back</span>
+                </button>
+                <div className="flex items-center gap-3 mb-4">
+                  <span className={`text-sm font-medium ${getDifficultyColor(question.difficulty)}`}>
+                    {question.difficulty}
+                  </span>
+                  <span className="text-sm text-[#b3b3b3]">•</span>
+                  <span className="text-sm text-[#b3b3b3]">{question.category}</span>
+                </div>
+                <h1 className="text-2xl font-semibold text-white mb-6">{question.title}</h1>
+              </div>
 
-          <div className="bg-white rounded-lg shadow p-6 mb-6">
-            <div className="flex items-center space-x-4 mb-4">
-              <span
-                className={`px-2 py-1 text-xs font-semibold rounded ${
-                  question.difficulty === 'Easy'
-                    ? 'bg-green-100 text-green-800'
-                    : question.difficulty === 'Medium'
-                    ? 'bg-yellow-100 text-yellow-800'
-                    : 'bg-red-100 text-red-800'
-                }`}
-              >
-                {question.difficulty}
-              </span>
-              <span className="px-2 py-1 text-xs bg-blue-100 text-blue-800 rounded">
-                {question.category}
-              </span>
-            </div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-4">{question.title}</h1>
-            <div className="mb-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-2">Scenario</h2>
-              <p className="text-gray-700 whitespace-pre-wrap">{question.scenario}</p>
-            </div>
-            <div>
-              <h2 className="text-lg font-semibold text-gray-900 mb-2">Description</h2>
-              <p className="text-gray-700 whitespace-pre-wrap">{question.description}</p>
+              {/* Question Content */}
+              <div className="space-y-6 text-[#b3b3b3]">
+                {question.scenario && (
+                  <div>
+                    <h2 className="text-lg font-semibold text-white mb-3">Scenario</h2>
+                    <div className="text-sm leading-relaxed whitespace-pre-wrap">
+                      {question.scenario}
+                    </div>
+                  </div>
+                )}
+                {question.description && (
+                  <div>
+                    <h2 className="text-lg font-semibold text-white mb-3">Description</h2>
+                    <div className="text-sm leading-relaxed whitespace-pre-wrap">
+                      {question.description}
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
-          {!submittedAnswer ? (
-            <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Your Solution</h2>
-              <textarea
-                value={answer}
-                onChange={(e) => setAnswer(e.target.value)}
-                className="w-full border border-gray-300 rounded-md px-3 py-2 mb-4 min-h-[300px] font-mono text-sm"
-                placeholder="Write your solution here..."
-                required
-              />
-              <button
-                type="submit"
-                disabled={submitting || !answer.trim()}
-                className="w-full px-6 py-2 bg-black text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
-              >
-                {submitting ? 'Submitting...' : 'Submit for Rating'}
-              </button>
-            </form>
-          ) : (
-            <div className="bg-white rounded-lg shadow p-6">
-              <h2 className="text-lg font-semibold text-gray-900 mb-4">Your Solution</h2>
-              <div className="bg-gray-50 rounded-md p-4 mb-6">
-                <pre className="whitespace-pre-wrap text-sm text-gray-700">{submittedAnswer.answer}</pre>
+          {/* Right Panel - Code Editor */}
+          <div className="w-full lg:w-[600px] xl:w-[700px] flex flex-col bg-[#1e1e1e] border-t lg:border-t-0 border-l border-[#3c3c3c]">
+            {!submittedAnswer ? (
+              <form onSubmit={handleSubmit} className="flex flex-col h-full">
+                {/* Editor Header */}
+                <div className="flex items-center justify-between px-4 py-3 border-b border-[#3c3c3c] bg-[#252526]">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-[#b3b3b3]">Solution</span>
+                  </div>
+                </div>
+
+                {/* Code Editor Area */}
+                <div className="flex-1 flex flex-col overflow-hidden">
+                  <textarea
+                    value={answer}
+                    onChange={(e) => setAnswer(e.target.value)}
+                    className="flex-1 w-full bg-[#1e1e1e] text-[#d4d4d4] font-mono text-sm p-4 resize-none focus:outline-none border-none"
+                    placeholder="// Write your solution here..."
+                    required
+                    style={{ tabSize: 2 }}
+                  />
+                </div>
+
+                {/* Submit Button */}
+                <div className="px-4 py-3 border-t border-[#3c3c3c] bg-[#252526]">
+                  <button
+                    type="submit"
+                    disabled={submitting || !answer.trim()}
+                    className="w-full px-4 py-2.5 bg-[#22c55e] hover:bg-[#16a34a] text-white font-medium rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {submitting ? 'Submitting...' : 'Submit for Rating'}
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <div className="flex flex-col h-full">
+                {/* Result Header */}
+                <div className="flex items-center justify-between px-4 py-3 border-b border-[#3c3c3c] bg-[#252526]">
+                  <span className="text-sm text-[#b3b3b3]">Solution Result</span>
+                </div>
+
+                {/* Result Content */}
+                <div className="flex-1 overflow-y-auto p-4 space-y-6">
+                  {/* Submitted Answer */}
+                  <div>
+                    <h3 className="text-sm font-semibold text-white mb-2">Your Solution</h3>
+                    <div className="bg-[#252526] rounded-md p-4 border border-[#3c3c3c]">
+                      <pre className="text-sm text-[#d4d4d4] font-mono whitespace-pre-wrap leading-relaxed">
+                        {submittedAnswer.answer}
+                      </pre>
+                    </div>
+                  </div>
+
+                  {/* Rating */}
+                  {submittedAnswer.rating && (
+                    <div>
+                      <h3 className="text-sm font-semibold text-white mb-3">Rating</h3>
+                      <div className="flex items-baseline gap-3">
+                        <div className="text-5xl font-bold text-white">{submittedAnswer.rating}</div>
+                        <div className="text-lg text-[#b3b3b3]">/ 10</div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Feedback */}
+                  {submittedAnswer.feedback && (
+                    <div>
+                      <h3 className="text-sm font-semibold text-white mb-3">Feedback</h3>
+                      <div className="bg-[#1e3a5f] border border-[#2d5a8a] rounded-md p-4">
+                        <p className="text-sm text-[#b3d4fc] leading-relaxed whitespace-pre-wrap">
+                          {submittedAnswer.feedback}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Reset Button */}
+                  <div className="pt-4">
+                    <button
+                      onClick={() => {
+                        setSubmittedAnswer(null);
+                        setAnswer('');
+                      }}
+                      className="w-full px-4 py-2.5 bg-[#3c3c3c] hover:bg-[#4a4a4a] text-white font-medium rounded-md transition-colors"
+                    >
+                      Submit New Answer
+                    </button>
+                  </div>
+                </div>
               </div>
-
-              {submittedAnswer.rating && (
-                <div className="mb-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Rating</h3>
-                  <div className="flex items-center space-x-4">
-                    <div className="text-4xl font-bold text-black">{submittedAnswer.rating}</div>
-                    <div className="text-gray-500">out of 10</div>
-                  </div>
-                </div>
-              )}
-
-              {submittedAnswer.feedback && (
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Feedback</h3>
-                  <div className="bg-blue-50 border border-blue-200 rounded-md p-4">
-                    <p className="text-gray-700 whitespace-pre-wrap">{submittedAnswer.feedback}</p>
-                  </div>
-                </div>
-              )}
-
-              <button
-                onClick={() => {
-                  setSubmittedAnswer(null);
-                  setAnswer('');
-                }}
-                className="mt-6 px-6 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700"
-              >
-                Submit New Answer
-              </button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
     </ProtectedRoute>

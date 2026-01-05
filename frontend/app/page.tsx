@@ -1,7 +1,26 @@
+'use client';
+
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Navbar from '@/components/Navbar';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function Home() {
+  const router = useRouter();
+  const { isAuthenticated } = useAuth();
+
+  useEffect(() => {
+    if (isAuthenticated()) {
+      router.push('/dsa');
+    }
+  }, [isAuthenticated, router]);
+
+  // Don't render the home page if user is authenticated (redirecting)
+  if (isAuthenticated()) {
+    return null;
+  }
+
   return (
     <>
       <Navbar />

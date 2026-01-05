@@ -1,11 +1,12 @@
 {
   "lockfileVersion": 1,
+  "configVersion": 0,
   "workspaces": {
     "": {
       "name": "backend",
       "dependencies": {
-        "backend": ".",
         "@hono/node-server": "^1.19.7",
+        "backend": ".",
         "bcrypt": "^6.0.0",
         "hono": "^4.11.3",
         "jsonwebtoken": "^9.0.3",

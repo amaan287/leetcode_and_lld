@@ -1,6 +1,6 @@
 import { ObjectId } from 'mongodb';
 import { DSARepository } from '../repositories/DSARepository';
-import { DSAList } from '../models/DSAList';
+import type { DSAList } from '../models/DSAList';
 import { AppError } from '../utils/errors';
 
 export class DSAService {
@@ -150,6 +150,14 @@ export class DSAService {
         status: statusMap.get(problem._id!.toString()),
       })),
     };
+  }
+
+  async searchProblemsByTitle(query: string, limit: number = 50): Promise<any[]> {
+    return this.dsaRepository.searchProblemsByTitle(query, limit);
+  }
+
+  async getProblems(limit: number = 100, skip: number = 0): Promise<any[]> {
+    return this.dsaRepository.getProblems(limit, skip);
   }
 }
 

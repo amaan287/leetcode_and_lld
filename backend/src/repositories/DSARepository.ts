@@ -1,8 +1,8 @@
 import { ObjectId, Collection } from 'mongodb';
 import { getDatabase } from '../config/database';
-import { DSAProblem, DSAList, UserProblemStatus } from '../models/DSAProblem';
-import { DSAList as DSAListModel } from '../models/DSAList';
-import { UserProblemStatus as UserProblemStatusModel } from '../models/UserProblemStatus';
+import type { DSAProblem } from '../models/DSAProblem';
+import type { DSAList as DSAListModel } from '../models/DSAList';
+import type { UserProblemStatus as UserProblemStatusModel } from '../models/UserProblemStatus';
 
 export class DSARepository {
   private getProblemsCollection(): Collection<DSAProblem> {
@@ -33,8 +33,30 @@ export class DSARepository {
       .toArray();
   }
 
+  async searchProblemsByTitle(query: string, limit: number = 50): Promise<DSAProblem[]> {
+    const searchRegex = new RegExp(query, 'i');
+    return this.getProblemsCollection()
+      .find({
+        $or: [
+          { title: searchRegex },
+          { titleSlug: searchRegex },
+          { frontendQuestionId: searchRegex },
+        ],
+      })
+      .limit(limit)
+      .toArray();
+  }
+
+  async getProblems(limit: number = 100, skip: number = 0): Promise<DSAProblem[]> {
+    return this.getProblemsCollection()
+      .find({})
+      .skip(skip)
+      .limit(limit)
+      .toArray();
+  }
+
   // List operations
-  async createList(list: Omit<DSAListModel, '_id'>): Promise<DSAListModel> {
+  async createList(list: Omit<DSAListModel, '_id' | 'createdAt' | 'updatedAt'>): Promise<DSAListModel> {
     const result = await this.getListsCollection().insertOne({
       ...list,
       createdAt: new Date(),
