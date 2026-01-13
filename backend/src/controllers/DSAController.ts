@@ -445,5 +445,62 @@ export class DSAController {
       return c.json(createErrorResponse(error), 500 as ContentfulStatusCode);
     }
   }
+
+  async getProblem(c: Context) {
+    try {
+      const problemId = c.req.param('id');
+      console.log('Getting problem with ID:', problemId);
+      
+      if (!problemId) {
+        return c.json(
+          createErrorResponse(new AppError(400, 'Problem ID is required', 'VALIDATION_ERROR')),
+          400 as ContentfulStatusCode
+        );
+      }
+
+      // Validate ObjectId format
+      let objectId;
+      try {
+        const { ObjectId } = await import('mongodb');
+        objectId = new ObjectId(problemId);
+        console.log('Valid ObjectId:', objectId.toString());
+      } catch (idError) {
+        console.error('Invalid ObjectId format:', problemId, idError);
+        return c.json(
+          createErrorResponse(new AppError(400, 'Invalid problem ID format', 'VALIDATION_ERROR')),
+          400 as ContentfulStatusCode
+        );
+      }
+
+      const problem = await this.dsaService.getProblemById(problemId);
+      console.log('Problem found:', problem ? 'Yes' : 'No', problem?._id?.toString());
+
+      if (!problem) {
+        return c.json(
+          createErrorResponse(new AppError(404, 'Problem not found', 'PROBLEM_NOT_FOUND')),
+          404 as ContentfulStatusCode
+        );
+      }
+
+      return c.json({
+        _id: problem._id?.toString(),
+        frontendQuestionId: problem.frontendQuestionId,
+        title: problem.title,
+        titleSlug: problem.titleSlug,
+        difficulty: problem.difficulty,
+        acRate: problem.acRate,
+        topicTags: problem.topicTags || [],
+        paidOnly: problem.paidOnly || false,
+        hasSolution: problem.hasSolution || false,
+        hasVideoSolution: problem.hasVideoSolution || false,
+      });
+    } catch (error) {
+      console.error('Error in getProblem:', error);
+      if (error instanceof AppError) {
+        return c.json(createErrorResponse(error), error.statusCode as ContentfulStatusCode);
+      }
+      return c.json(createErrorResponse(error), 500 as ContentfulStatusCode);
+    }
+  }
 }
 

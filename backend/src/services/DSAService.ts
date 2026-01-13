@@ -159,5 +159,13 @@ export class DSAService {
   async getProblems(limit: number = 100, skip: number = 0): Promise<any[]> {
     return this.dsaRepository.getProblems(limit, skip);
   }
+
+  async getProblemById(problemId: string): Promise<any> {
+    const problem = await this.dsaRepository.findProblemById(problemId);
+    if (!problem) {
+      throw new AppError(404, 'Problem not found', 'PROBLEM_NOT_FOUND');
+    }
+    return problem;
+  }
 }
 

@@ -39,7 +39,7 @@ Format your response as JSON with the following structure:
 Be thorough and constructive in your feedback.`;
 
     const response = await this.openai.chat.completions.create({
-      model: 'gpt-4',
+      model: 'gpt-4o',
       messages: [
         {
           role: 'system',

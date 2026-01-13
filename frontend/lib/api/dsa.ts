@@ -73,5 +73,15 @@ export const dsaApi = {
     });
     return response.data;
   },
+
+  getProblem: async (id: string): Promise<DSAProblem> => {
+    const response = await apiClient.get(`/dsa/problems/${id}`);
+    // Check if response contains an error object (even with 200 status)
+    if (response.data && 'error' in response.data) {
+      const error = response.data.error;
+      throw new Error(error.message || 'Problem not found');
+    }
+    return response.data as DSAProblem;
+  },
 };
 

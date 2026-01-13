@@ -20,6 +20,7 @@ export function createDSARoutes() {
   router.post('/search/query', authMiddleware, (c) => dsaController.searchByQuery(c));
   router.post('/search/problems', authMiddleware, (c) => dsaController.searchProblems(c));
   router.get('/problems', authMiddleware, (c) => dsaController.getProblems(c));
+  router.get('/problems/:id', authMiddleware, (c) => dsaController.getProblem(c));
   router.post('/lists', authMiddleware, (c) => dsaController.createList(c));
   router.get('/lists', authMiddleware, (c) => dsaController.getMyLists(c));
   router.get('/lists/:id', authMiddleware, (c) => dsaController.getList(c));

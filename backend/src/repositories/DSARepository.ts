@@ -19,8 +19,25 @@ export class DSARepository {
 
   // Problem operations
   async findProblemById(id: string | ObjectId): Promise<DSAProblem | null> {
-    const objectId = typeof id === 'string' ? new ObjectId(id) : id;
-    return this.getProblemsCollection().findOne({ _id: objectId });
+    try {
+      const objectId = typeof id === 'string' ? new ObjectId(id) : id;
+      const problem = await this.getProblemsCollection().findOne({ _id: objectId });
+      
+      // If not found by _id, try searching by frontendQuestionId as fallback
+      if (!problem && typeof id === 'string') {
+        console.log('Problem not found by _id, trying frontendQuestionId:', id);
+        return this.getProblemsCollection().findOne({ frontendQuestionId: id });
+      }
+      
+      return problem;
+    } catch (error) {
+      // If ObjectId conversion fails, try searching by frontendQuestionId
+      if (typeof id === 'string') {
+        console.log('ObjectId conversion failed, trying frontendQuestionId:', id);
+        return this.getProblemsCollection().findOne({ frontendQuestionId: id });
+      }
+      throw error;
+    }
   }
 
   async findProblemsByIds(ids: ObjectId[]): Promise<DSAProblem[]> {

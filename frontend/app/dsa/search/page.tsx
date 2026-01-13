@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import Navbar from '@/components/Navbar';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { useAuth } from '@/hooks/useAuth';
@@ -245,48 +246,53 @@ export default function CompanySearchPage() {
                     const isAdding = addingProblems.has(problem._id);
                     
                     return (
-                      <div key={problem._id} className="bg-white rounded-lg shadow p-6">
+                      <div key={problem._id} className="bg-white rounded-lg shadow p-6 hover:shadow-lg transition-shadow">
                         <div className="flex items-start justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center space-x-2 mb-2">
-                              <span className="text-sm font-medium text-gray-500">#{index + 1}</span>
-                              <h3 className="text-lg font-semibold text-gray-900">{problem.title}</h3>
-                            </div>
-                            <p className="text-sm text-gray-600 mb-3">
-                              ID: {problem.frontendQuestionId} • {problem.titleSlug}
-                              {problem.acRate && ` • ${problem.acRate.toFixed(1)}% acceptance`}
-                            </p>
-                            <div className="flex items-center space-x-4">
-                              <span
-                                className={`px-2 py-1 text-xs font-semibold rounded ${
-                                  problem.difficulty === 'Easy'
-                                    ? 'bg-green-100 text-green-800'
-                                    : problem.difficulty === 'Medium'
-                                    ? 'bg-yellow-100 text-yellow-800'
-                                    : 'bg-red-100 text-red-800'
-                                }`}
-                              >
-                                {problem.difficulty}
-                              </span>
-                              {problem.paidOnly && (
-                                <span className="px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded">
-                                  Premium
+                          <Link
+                            href={`/dsa/problems/${problem._id}`}
+                            className="flex-1 hover:opacity-80 transition-opacity cursor-pointer"
+                          >
+                            <div>
+                              <div className="flex items-center space-x-2 mb-2">
+                                <span className="text-sm font-medium text-gray-500">#{index + 1}</span>
+                                <h3 className="text-lg font-semibold text-gray-900">{problem.title}</h3>
+                              </div>
+                              <p className="text-sm text-gray-600 mb-3">
+                                ID: {problem.frontendQuestionId} • {problem.titleSlug}
+                                {problem.acRate && ` • ${problem.acRate.toFixed(1)}% acceptance`}
+                              </p>
+                              <div className="flex items-center space-x-4">
+                                <span
+                                  className={`px-2 py-1 text-xs font-semibold rounded ${
+                                    problem.difficulty === 'Easy'
+                                      ? 'bg-green-100 text-green-800'
+                                      : problem.difficulty === 'Medium'
+                                      ? 'bg-yellow-100 text-yellow-800'
+                                      : 'bg-red-100 text-red-800'
+                                  }`}
+                                >
+                                  {problem.difficulty}
                                 </span>
-                              )}
-                              {problem.topicTags && problem.topicTags.length > 0 && (
-                                <div className="flex flex-wrap gap-1">
-                                  {problem.topicTags.map((tag, idx) => (
-                                    <span
-                                      key={idx}
-                                      className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded"
-                                    >
-                                      {tag.name || tag.slug}
-                                    </span>
-                                  ))}
-                                </div>
-                              )}
+                                {problem.paidOnly && (
+                                  <span className="px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded">
+                                    Premium
+                                  </span>
+                                )}
+                                {problem.topicTags && problem.topicTags.length > 0 && (
+                                  <div className="flex flex-wrap gap-1">
+                                    {problem.topicTags.map((tag, idx) => (
+                                      <span
+                                        key={idx}
+                                        className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded"
+                                      >
+                                        {tag.name || tag.slug}
+                                      </span>
+                                    ))}
+                                  </div>
+                                )}
+                              </div>
                             </div>
-                          </div>
+                          </Link>
                           {lists.length > 0 && (
                             <div className="ml-4 flex flex-col gap-2">
                               {isInSelectedList ? (
@@ -295,7 +301,11 @@ export default function CompanySearchPage() {
                                 </span>
                               ) : (
                                 <button
-                                  onClick={() => handleAddProblem(problem._id)}
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    handleAddProblem(problem._id);
+                                  }}
                                   disabled={isAdding || !selectedListId}
                                   className="px-4 py-2 bg-black text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed text-sm whitespace-nowrap"
                                 >

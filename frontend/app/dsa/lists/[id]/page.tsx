@@ -127,62 +127,73 @@ export default function ListDetailPage() {
                       <input
                         type="checkbox"
                         checked={item.status?.isCompleted || false}
-                        onChange={() =>
+                        onChange={(e) => {
+                          e.stopPropagation();
                           handleToggleStatus(
                             item.problem._id,
                             item.status?.isCompleted || false
-                          )
-                        }
+                          );
+                        }}
+                        onClick={(e) => e.stopPropagation()}
                         className="mt-1 h-4 w-4 text-black focus:ring-black border-gray-300 rounded"
                       />
-                      <div className="ml-4 flex-1">
-                        <h3 className="text-lg font-medium text-gray-900">
-                          {item.problem.title}
-                        </h3>
-                        <p className="text-sm text-gray-500 mt-1">
-                          ID: {item.problem.frontendQuestionId} • {item.problem.titleSlug}
-                          {item.problem.acRate && ` • ${item.problem.acRate.toFixed(1)}% acceptance`}
-                        </p>
-                        <div className="mt-2 flex items-center space-x-4">
-                          <span
-                            className={`px-2 py-1 text-xs font-semibold rounded ${
-                              item.problem.difficulty === 'Easy'
-                                ? 'bg-green-100 text-green-800'
-                                : item.problem.difficulty === 'Medium'
-                                ? 'bg-yellow-100 text-yellow-800'
-                                : 'bg-red-100 text-red-800'
-                            }`}
-                          >
-                            {item.problem.difficulty}
-                          </span>
-                          {item.problem.paidOnly && (
-                            <span className="px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded">
-                              Premium
+                      <Link
+                        href={`/dsa/problems/${item.problem._id}`}
+                        className="ml-4 flex-1 hover:opacity-80 transition-opacity cursor-pointer"
+                      >
+                        <div>
+                          <h3 className="text-lg font-medium text-gray-900">
+                            {item.problem.title}
+                          </h3>
+                          <p className="text-sm text-gray-500 mt-1">
+                            ID: {item.problem.frontendQuestionId} • {item.problem.titleSlug}
+                            {item.problem.acRate && ` • ${item.problem.acRate.toFixed(1)}% acceptance`}
+                          </p>
+                          <div className="mt-2 flex items-center space-x-4">
+                            <span
+                              className={`px-2 py-1 text-xs font-semibold rounded ${
+                                item.problem.difficulty === 'Easy'
+                                  ? 'bg-green-100 text-green-800'
+                                  : item.problem.difficulty === 'Medium'
+                                  ? 'bg-yellow-100 text-yellow-800'
+                                  : 'bg-red-100 text-red-800'
+                              }`}
+                            >
+                              {item.problem.difficulty}
                             </span>
-                          )}
-                          {item.problem.topicTags && item.problem.topicTags.length > 0 && (
-                            <div className="flex flex-wrap gap-1">
-                              {item.problem.topicTags.slice(0, 3).map((tag, idx) => (
-                                <span
-                                  key={idx}
-                                  className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded"
-                                >
-                                  {tag.name || tag.slug}
-                                </span>
-                              ))}
-                            </div>
+                            {item.problem.paidOnly && (
+                              <span className="px-2 py-1 text-xs bg-yellow-100 text-yellow-800 rounded">
+                                Premium
+                              </span>
+                            )}
+                            {item.problem.topicTags && item.problem.topicTags.length > 0 && (
+                              <div className="flex flex-wrap gap-1">
+                                {item.problem.topicTags.slice(0, 3).map((tag, idx) => (
+                                  <span
+                                    key={idx}
+                                    className="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded"
+                                  >
+                                    {tag.name || tag.slug}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                          {item.status?.checkedAt && (
+                            <p className="text-xs text-gray-400 mt-1">
+                              Completed on {new Date(item.status.checkedAt).toLocaleDateString()}
+                            </p>
                           )}
                         </div>
-                        {item.status?.checkedAt && (
-                          <p className="text-xs text-gray-400 mt-1">
-                            Completed on {new Date(item.status.checkedAt).toLocaleDateString()}
-                          </p>
-                        )}
-                      </div>
+                      </Link>
                     </div>
                     {isOwner && (
                       <button
-                        onClick={() => handleRemoveProblem(item.problem._id)}
+                        onClick={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          handleRemoveProblem(item.problem._id);
+                        }}
                         className="ml-4 text-red-600 hover:text-red-700 text-sm"
                       >
                         Remove
